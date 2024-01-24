@@ -2,9 +2,56 @@ import { type SkhdBind, updateSkhdConfig } from "./lib/skhd.ts";
 import * as space from "./lib/space.ts";
 import { balance } from "./lib/space.ts";
 import * as window from "./lib/window.ts";
+import * as query from "./lib/query.ts";
 import { run } from "./lib/yabai.ts";
+import type { Space, Window } from "./lib/types.ts";
 
 const binds: SkhdBind[] = [];
+
+function nextIndex(current: number, length: number) {
+  if (current === length - 1) {
+    return 0;
+  } else {
+    return current + 1;
+  }
+}
+
+function previousIndex(current: number, length: number) {
+  if (current === 0) {
+    return length - 1;
+  } else {
+    return current - 1;
+  }
+}
+
+function moveStackDirection(direction: "next" | "previous") {
+  const windows = JSON.parse(
+    run(query.windows({ space: "current" })),
+  ) as Window[];
+
+  const stackIndices = windows
+    .map((window) => window["stack-index"])
+    .sort((a, b) => a - b);
+
+  const currentlyFocusedWindowStackIndex =
+    windows.find((window) => window["has-focus"])?.["stack-index"] ?? -1;
+
+  const currentlyFocusedIndex = stackIndices.indexOf(
+    currentlyFocusedWindowStackIndex,
+  );
+  const nextFocusedIndex =
+    direction === "next"
+      ? nextIndex(currentlyFocusedIndex, stackIndices.length)
+      : previousIndex(currentlyFocusedIndex, stackIndices.length);
+
+  const nextFocusedStackIndex = stackIndices[nextFocusedIndex];
+
+  const windowIdOfNextStackIndex = windows.find(
+    (window) => window["stack-index"] === nextFocusedStackIndex,
+  )?.id;
+
+  run(window.focus(windowIdOfNextStackIndex));
+}
 
 function on(key: string, callback: () => void) {
   binds.push({
@@ -15,19 +62,31 @@ function on(key: string, callback: () => void) {
 }
 
 on("alt-h", () => {
-  Bun.spawnSync(["/Users/terence/focus.sh", "h"]);
-});
-
-on("alt-j", () => {
-  Bun.spawnSync(["/Users/terence/focus.sh", "j"]);
-});
-
-on("alt-k", () => {
-  Bun.spawnSync(["/Users/terence/focus.sh", "k"]);
+  run(window.focus("west"));
 });
 
 on("alt-l", () => {
-  Bun.spawnSync(["/Users/terence/focus.sh", "l"]);
+  run(window.focus("east"));
+});
+
+on("alt-j", () => {
+  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+
+  if (result.type === "stack") {
+    moveStackDirection("next");
+  } else {
+    run(window.focus("south"));
+  }
+});
+
+on("alt-k", () => {
+  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+
+  if (result.type === "stack") {
+    moveStackDirection("previous");
+  } else {
+    run(window.focus("north"));
+  }
 });
 
 on("shift+alt-h", () => {
@@ -68,8 +127,14 @@ on("alt-e", () => {
   run(window.toggle("split"));
 });
 
-on("alt-t", () => {
-  Bun.spawnSync(["bash", "~/toggle-layout.sh"]);
+on("alt-t", async () => {
+  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+
+  if (result.type === "bsp") {
+    run(space.layout("stack"));
+  } else {
+    run(space.layout("bsp"));
+  }
 });
 
 on("alt-b", () => {
@@ -77,6 +142,7 @@ on("alt-b", () => {
 });
 
 if (process.argv[2] === "update") {
+  console.log("Generating SKHD Config...");
   await updateSkhdConfig(binds);
 } else if (process.argv[2] === "skhd") {
   const bindKey = process.argv[3];
