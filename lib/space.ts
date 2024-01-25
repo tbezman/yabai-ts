@@ -1,11 +1,12 @@
 import type { DisplaySelection, Label, SpaceSelection } from "./types.ts";
+import { run } from "./execute.ts";
 
 /**
  * Focus the given space.
  * System Integrity Protection must be partially disabled.
  */
 export function focus(space: SpaceSelection) {
-  return ["yabai", "-m", "space", "--focus", space];
+  run(["yabai", "-m", "space", "--focus", space]);
 }
 
 /**
@@ -13,7 +14,7 @@ export function focus(space: SpaceSelection) {
  * System Integrity Protection must be partially disabled.
  */
 export function create(display?: DisplaySelection) {
-  return ["yabai", "-m", "display", "--create", display];
+  run(["yabai", "-m", "display", "--create", display]);
 }
 
 /**
@@ -21,7 +22,7 @@ export function create(display?: DisplaySelection) {
  * System Integrity Protection must be partially disabled.
  */
 export function destroy(space?: SpaceSelection) {
-  return ["yabai", "-m", "space", "--destroy", space];
+  run(["yabai", "-m", "space", "--destroy", space]);
 }
 
 /**
@@ -30,7 +31,7 @@ export function destroy(space?: SpaceSelection) {
  * System Integrity Protection must be partially disabled.
  */
 export function move(space: SpaceSelection) {
-  return ["yabai", "-m", "window", "--space", space];
+  run(["yabai", "-m", "window", "--space", space]);
 }
 
 /**
@@ -39,7 +40,7 @@ export function move(space: SpaceSelection) {
  * System Integrity Protection must be partially disabled.
  */
 export function swap(space: SpaceSelection) {
-  return ["yabai", "-m", "space", "--swap", space];
+  run(["yabai", "-m", "space", "--swap", space]);
 }
 
 /**
@@ -47,28 +48,28 @@ export function swap(space: SpaceSelection) {
  * System Integrity Protection must be partially disabled.
  */
 export function display(display: DisplaySelection) {
-  return ["yabai", "-m", "space", "--display", display];
+  run(["yabai", "-m", "space", "--display", display]);
 }
 
 /**
  * Adjust the split ratios on the selected space so that all windows along the given axis occupy the same area. If no axis is specified, use both.
  */
 export function balance(axis?: "x-axis" | "y-axis") {
-  return ["yabai", "-m", "space", "--balance", axis];
+  run(["yabai", "-m", "space", "--balance", axis]);
 }
 
 /**
  * Flip the tree of the selected space along the given axis.
  */
 export function mirror(axis: "x-axis" | "y-axis") {
-  return ["yabai", "-m", "space", "--mirror", axis];
+  run(["yabai", "-m", "space", "--mirror", axis]);
 }
 
 /**
  * Rotate the tree of the selected space.
  */
 export function rotate(degrees: 90 | 180 | 270) {
-  return ["yabai", "-m", "space", "--rotate", degrees];
+  run(["yabai", "-m", "space", "--rotate", degrees]);
 }
 
 /**
@@ -77,14 +78,14 @@ export function rotate(degrees: 90 | 180 | 270) {
 export function padding(
   param: `abs|rel:${number}:${number}:${number}:${number}`,
 ) {
-  return ["yabai", "-m", "space", "--padding", param];
+  run(["yabai", "-m", "space", "--padding", param]);
 }
 
 /**
  * Padding added at the sides of the selected space.
  */
 export function gap(param: `abs|rel:${number}`) {
-  return ["yabai", "-m", "space", "--gap", param];
+  run(["yabai", "-m", "space", "--gap", param]);
 }
 
 /**
@@ -93,14 +94,14 @@ export function gap(param: `abs|rel:${number}`) {
 export function toggle(
   param: "padding" | "gap" | "mission-control" | "show-desktop",
 ) {
-  return ["yabai", "-m", "space", "--toggle", param];
+  run(["yabai", "-m", "space", "--toggle", param]);
 }
 
 /**
  * Set the layout of the selected space.
  */
 export function layout(param: "bsp" | "stack" | "float") {
-  return ["yabai", "-m", "space", "--layout", param];
+  run(["yabai", "-m", "space", "--layout", param]);
 }
 
 /**
@@ -108,5 +109,5 @@ export function layout(param: "bsp" | "stack" | "float") {
  * If the command is called without an argument it will try to remove a previously assigned label.
  */
 export function label(label?: Label) {
-  return ["yabai", "-m", "space", "--label", label];
+  run(["yabai", "-m", "space", "--label", label]);
 }

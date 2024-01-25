@@ -47,7 +47,7 @@ export type SpaceSelection =
   | number
   | Label;
 
-export type Dipslay = {
+export type Display = {
   id: number;
   uuid: string;
   index: number;

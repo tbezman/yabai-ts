@@ -3,8 +3,6 @@ import * as space from "./lib/space.ts";
 import { balance } from "./lib/space.ts";
 import * as window from "./lib/window.ts";
 import * as query from "./lib/query.ts";
-import { run } from "./lib/yabai.ts";
-import type { Space, Window } from "./lib/types.ts";
 
 const binds: SkhdBind[] = [];
 
@@ -25,9 +23,7 @@ function previousIndex(current: number, length: number) {
 }
 
 function moveStackDirection(direction: "next" | "previous") {
-  const windows = JSON.parse(
-    run(query.windows({ space: "current" })),
-  ) as Window[];
+  const windows = query.windows({ space: "current" });
 
   const stackIndices = windows
     .map((window) => window["stack-index"])
@@ -50,7 +46,7 @@ function moveStackDirection(direction: "next" | "previous") {
     (window) => window["stack-index"] === nextFocusedStackIndex,
   )?.id;
 
-  run(window.focus(windowIdOfNextStackIndex));
+  window.focus(windowIdOfNextStackIndex);
 }
 
 function on(key: string, callback: () => void) {
@@ -62,83 +58,83 @@ function on(key: string, callback: () => void) {
 }
 
 on("alt-h", () => {
-  run(window.focus("west"));
+  window.focus("west");
 });
 
 on("alt-l", () => {
-  run(window.focus("east"));
+  window.focus("east");
 });
 
 on("alt-j", () => {
-  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+  const result = query.spaces({ space: "current" });
 
   if (result.type === "stack") {
     moveStackDirection("next");
   } else {
-    run(window.focus("south"));
+    window.focus("south");
   }
 });
 
 on("alt-k", () => {
-  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+  const result = query.spaces({ space: "current" });
 
   if (result.type === "stack") {
     moveStackDirection("previous");
   } else {
-    run(window.focus("north"));
+    window.focus("north");
   }
 });
 
 on("shift+alt-h", () => {
-  run(window.swap("west"));
+  window.swap("west");
 });
 
 on("shift+alt-j", () => {
-  run(window.swap("south"));
+  window.swap("south");
 });
 
 on("shift+alt-k", () => {
-  run(window.swap("north"));
+  window.swap("north");
 });
 
 on("shift+alt-l", () => {
-  run(window.swap("east"));
+  window.swap("east");
 });
 
 on("ctrl+alt-return", () => {
-  run(window.grid("1:1:0:0:1:1"));
+  window.grid("1:1:0:0:1:1");
 });
 
 for (let i = 0; i < 10; i++) {
   on(`alt-${i}`, () => {
-    run(space.focus(i));
+    space.focus(i);
   });
 
   on(`shift+alt-${i}`, () => {
-    run(window.space(i));
+    window.space(i);
   });
 }
 
 on("alt-r", () => {
-  run(space.rotate(90));
+  space.rotate(90);
 });
 
 on("alt-e", () => {
-  run(window.toggle("split"));
+  window.toggle("split");
 });
 
 on("alt-t", async () => {
-  const result = JSON.parse(run(query.spaces({ space: "current" }))) as Space;
+  const result = query.spaces({ space: "current" });
 
   if (result.type === "bsp") {
-    run(space.layout("stack"));
+    space.layout("stack");
   } else {
-    run(space.layout("bsp"));
+    space.layout("bsp");
   }
 });
 
 on("alt-b", () => {
-  run(balance());
+  balance();
 });
 
 if (process.argv[2] === "update") {
