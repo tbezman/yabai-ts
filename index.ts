@@ -1,61 +1,8 @@
-import { type SkhdBind, updateSkhdConfig } from "./lib/skhd.ts";
+import { binds, on, updateSkhdConfig } from "./lib/skhd.ts";
 import * as space from "./lib/space.ts";
 import { balance } from "./lib/space.ts";
 import * as window from "./lib/window.ts";
 import * as query from "./lib/query.ts";
-
-const binds: SkhdBind[] = [];
-
-function nextIndex(current: number, length: number) {
-  if (current === length - 1) {
-    return 0;
-  } else {
-    return current + 1;
-  }
-}
-
-function previousIndex(current: number, length: number) {
-  if (current === 0) {
-    return length - 1;
-  } else {
-    return current - 1;
-  }
-}
-
-function moveStackDirection(direction: "next" | "previous") {
-  const windows = query.windows({ space: "current" });
-
-  const stackIndices = windows
-    .map((window) => window["stack-index"])
-    .sort((a, b) => a - b);
-
-  const currentlyFocusedWindowStackIndex =
-    windows.find((window) => window["has-focus"])?.["stack-index"] ?? -1;
-
-  const currentlyFocusedIndex = stackIndices.indexOf(
-    currentlyFocusedWindowStackIndex,
-  );
-  const nextFocusedIndex =
-    direction === "next"
-      ? nextIndex(currentlyFocusedIndex, stackIndices.length)
-      : previousIndex(currentlyFocusedIndex, stackIndices.length);
-
-  const nextFocusedStackIndex = stackIndices[nextFocusedIndex];
-
-  const windowIdOfNextStackIndex = windows.find(
-    (window) => window["stack-index"] === nextFocusedStackIndex,
-  )?.id;
-
-  window.focus(windowIdOfNextStackIndex);
-}
-
-function on(key: string, callback: () => void) {
-  binds.push({
-    key,
-    callback,
-    command: `bun /Users/terence/Code/yabai-ts/index.ts skhd ${key}`,
-  });
-}
 
 on("alt-h", () => {
   window.focus("west");
@@ -66,20 +13,20 @@ on("alt-l", () => {
 });
 
 on("alt-j", () => {
-  const result = query.spaces({ space: "current" });
+  const currentSpace = query.spaces({ space: "current" });
 
-  if (result.type === "stack") {
-    moveStackDirection("next");
+  if (currentSpace.type === "stack") {
+    window.focus("stack.next");
   } else {
     window.focus("south");
   }
 });
 
 on("alt-k", () => {
-  const result = query.spaces({ space: "current" });
+  const currentSpace = query.spaces({ space: "current" });
 
-  if (result.type === "stack") {
-    moveStackDirection("previous");
+  if (currentSpace.type === "stack") {
+    window.focus("stack.prev");
   } else {
     window.focus("north");
   }
@@ -124,9 +71,9 @@ on("alt-e", () => {
 });
 
 on("alt-t", async () => {
-  const result = query.spaces({ space: "current" });
+  const currentSpace = query.spaces({ space: "current" });
 
-  if (result.type === "bsp") {
+  if (currentSpace.type === "bsp") {
     space.layout("stack");
   } else {
     space.layout("bsp");

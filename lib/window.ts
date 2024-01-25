@@ -5,12 +5,47 @@ import type {
   WindowSelection,
 } from "./types.ts";
 import { run } from "./execute.ts";
+import * as query from "./query.ts";
+import { nextIndex, previousIndex } from "./utils.ts";
+
+function moveStackDirection(direction: "next" | "previous") {
+  const windows = query.windows({ space: "current" });
+
+  const stackIndices = windows
+    .map((window) => window["stack-index"])
+    .sort((a, b) => a - b);
+
+  const currentlyFocusedWindowStackIndex =
+    windows.find((window) => window["has-focus"])?.["stack-index"] ?? -1;
+
+  const currentlyFocusedIndex = stackIndices.indexOf(
+    currentlyFocusedWindowStackIndex,
+  );
+  const nextFocusedIndex =
+    direction === "next"
+      ? nextIndex(currentlyFocusedIndex, stackIndices.length)
+      : previousIndex(currentlyFocusedIndex, stackIndices.length);
+
+  const nextFocusedStackIndex = stackIndices[nextFocusedIndex];
+
+  const windowIdOfNextStackIndex = windows.find(
+    (window) => window["stack-index"] === nextFocusedStackIndex,
+  )?.id;
+
+  focus(windowIdOfNextStackIndex);
+}
 
 /**
  * Focus the given window. If none specified, focus the selected window instead.
  */
 export function focus(window?: WindowSelection) {
-  run(["yabai", "-m", "window", "--focus", window]);
+  if (window === "stack.next") {
+    moveStackDirection("next");
+  } else if (window === "stack.prev") {
+    moveStackDirection("previous");
+  } else {
+    run(["yabai", "-m", "window", "--focus", window]);
+  }
 }
 
 /**
